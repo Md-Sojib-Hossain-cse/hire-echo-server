@@ -28,8 +28,22 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
+
+        const allJobsCollection = client.db("hireEchoDB").collection("allJobs");
+
         app.get('/', (req, res) => {
             res.send('HireEcho Server is running......')
+        })
+
+
+        app.get('/allJobs' , async(req , res) => {
+            const searchedCategory = req.query.category;
+            let query = {}
+            if(searchedCategory){
+                query = {category : searchedCategory}
+            }
+            const result = await allJobsCollection.find(query).toArray();
+            res.send(result);
         })
 
 
