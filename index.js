@@ -36,6 +36,7 @@ async function run() {
 
         const allJobsCollection = client.db("hireEchoDB").collection("allJobs");
         const companiesCollection = client.db("hireEchoDB").collection("topCompanies");
+        const appliedJobCollection = client.db("hireEchoDB").collection("appliedJobs");
 
         app.get('/', (req, res) => {
             res.send('HireEcho Server is running......')
@@ -67,6 +68,17 @@ async function run() {
         //top company related api
         app.get("/companies", async (req, res) => {
             const result = await companiesCollection.find().toArray();
+            res.send(result);
+        })
+
+
+        //applied jobs related api
+        app.post("/appliedJobs" , async(req , res) => {
+            const appliedJobsInfo = req.body;
+            const result = await appliedJobCollection.insertOne(appliedJobsInfo);
+            const jobId = req.body._id;
+            const query = {_id : new ObjectId(jobId)} 
+            allJobsCollection.updateOne(query , {$inc : {jobApplicantsNumber : 1}});
             res.send(result);
         })
 
