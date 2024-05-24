@@ -6,10 +6,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 //middlewares
 app.use(cors({
-    origin :[
-        'http://localhost:5173' , 'http://localhost:5174',
+    origin: [
+        'http://localhost:5173', 'http://localhost:5174',
     ],
-    credentials : true
+    credentials: true
 }));
 app.use(express.json());
 
@@ -43,31 +43,35 @@ async function run() {
 
 
         //jobs data related api
-        app.get('/allJobs' , async(req , res) => {
+        app.get('/allJobs', async (req, res) => {
             const searchedCategory = req.query.category;
+            const searchedByJobTitle = req.query.search;
             let query = {}
-            if(searchedCategory){
-                query = {category : searchedCategory}
+            if (searchedCategory) {
+                query = { ...query, category: searchedCategory }
+            }
+            if (searchedByJobTitle) {
+                query = { ...query , jobTitle : { $regex : searchedByJobTitle , $options : "i"} }
             }
             const result = await allJobsCollection.find(query).toArray();
             res.send(result);
         })
 
-        app.get("/jobDetails/:id" , async(req , res) => {
-            const query = {_id : new ObjectId(req.params.id)}
+        app.get("/jobDetails/:id", async (req, res) => {
+            const query = { _id: new ObjectId(req.params.id) }
             const result = await allJobsCollection.findOne(query);
             res.send(result);
         })
 
 
         //top company related api
-        app.get("/companies" , async(req , res) => {
+        app.get("/companies", async (req, res) => {
             const result = await companiesCollection.find().toArray();
             res.send(result);
         })
 
 
-        
+
         app.listen(port, () => {
             console.log(`Example app listening on port ${port}`)
         })
