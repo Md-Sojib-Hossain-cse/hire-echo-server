@@ -16,6 +16,23 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+
+//token verify middleware
+const verifyToken = (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log(token)
+    if (!token) {
+        return res.status(401).send({ message: "unauthorized access" })
+    }
+    jwt.verify(token, process.env.API_SECRET_KEY, (err, decode) => {
+        if (err) {
+            return res.status(401).send({ message: "unauthorized access" })
+        }
+        req.user = decode
+        next();
+    })
+}
+
 const port = process.env.PORT || 5000;
 
 
@@ -49,12 +66,12 @@ async function run() {
 
 
         //jwt related api
-        app.post("/jwt" , async(req , res) => {
+        app.post("/jwt", async (req, res) => {
             const user = req.body;
-            const token = await jwt.sign(user , process.env.API_SECRET_KEY , {expiresIn : "2hr"})
+            const token = await jwt.sign(user, process.env.API_SECRET_KEY, { expiresIn: "2hr" })
             res
-            .cookie('token' , token , {httpOnly : true , secure : true , sameSite : 'none'})
-            .send({success : true});
+                .cookie('token', token, { httpOnly: true, secure: true, sameSite: 'none' })
+                .send({ success: true });
         })
 
 
@@ -68,7 +85,7 @@ async function run() {
                 query = { ...query, category: searchedCategory }
             }
             if (searchedByJobTitle) {
-                query = { ...query , jobTitle : { $regex : searchedByJobTitle , $options : "i"} }
+                query = { ...query, jobTitle: { $regex: searchedByJobTitle, $options: "i" } }
             }
             if (searchedByUserEmail) {
                 query = { ...query, "buyer.buyerEmail": searchedByUserEmail }
@@ -78,37 +95,37 @@ async function run() {
         })
 
         //post a job api
-        app.post("/addJobs" , async(req , res) => {
+        app.post("/addJobs", verifyToken , async (req, res) => {
             const jobData = req.body;
             const result = await allJobsCollection.insertOne(jobData);
             res.send(result);
         })
 
         //single job details api
-        app.get("/jobDetails/:id", async (req, res) => {
+        app.get("/jobDetails/:id", verifyToken , async (req, res) => {
             const query = { _id: new ObjectId(req.params.id) }
             const result = await allJobsCollection.findOne(query);
             res.send(result);
         })
 
         //update job details 
-        app.put("/jobDetailsUpdate/:id" ,async(req , res) => {
+        app.put("/jobDetailsUpdate/:id", verifyToken , async (req, res) => {
             const jobId = req.params.id;
             const jobDetails = req.body;
-            const filter = {_id : new ObjectId(jobId)};
+            const filter = { _id: new ObjectId(jobId) };
             const updateDoc = {
-                $set : {
+                $set: {
                     ...jobDetails
                 }
             }
-            const result = await allJobsCollection.updateOne(filter , updateDoc)
+            const result = await allJobsCollection.updateOne(filter, updateDoc)
             res.send(result);
         })
 
         //delete a job api 
-        app.delete("/myJob/:id" , async (req , res) => {
+        app.delete("/myJob/:id" , verifyToken , async (req, res) => {
             const jobId = req.params.id;
-            const query = {_id : new ObjectId(jobId)}
+            const query = { _id: new ObjectId(jobId) }
             const result = await allJobsCollection.deleteOne(query);
             res.send(result);
         })
@@ -124,49 +141,49 @@ async function run() {
         //applied jobs related api
 
         // applied job get api 
-        app.get("/appliedJobs" , async(req , res) => {
+        app.get("/appliedJobs" , async (req, res) => {
             const userEmail = req.query.email;
             const filterBy = req.query.filterBy;
             let query = {};
-            if(userEmail){
-                query = {... query , "applicantDetails.email" : userEmail}
+            if (userEmail) {
+                query = { ...query, "applicantDetails.email": userEmail }
             }
-            if(filterBy){
-                query = {... query , category : filterBy}
+            if (filterBy) {
+                query = { ...query, category: filterBy }
             }
             const result = await appliedJobCollection.find(query).toArray();
             res.send(result);
         })
 
         // applied job post api
-        app.post("/appliedJobs" , async(req , res) => {
+        app.post("/appliedJobs", verifyToken, async (req, res) => {
             const appliedJobsInfo = req.body;
             const result = await appliedJobCollection.insertOne(appliedJobsInfo);
             const jobId = req.body._id;
-            const query = {_id : new ObjectId(jobId)} 
-            allJobsCollection.updateOne(query , {$inc : {jobApplicantsNumber : 1}});
+            const query = { _id: new ObjectId(jobId) }
+            allJobsCollection.updateOne(query, { $inc: { jobApplicantsNumber: 1 } });
             res.send(result);
         })
 
 
         //user related api
-        app.get("/jobAppliedCount" , async(req , res) => {
+        app.get("/jobAppliedCount", verifyToken , async (req, res) => {
             const userEmail = req.query.email;
             let query = {};
-            if(userEmail){
-                query = {...query , "applicantDetails.email" : userEmail}
+            if (userEmail) {
+                query = { ...query, "applicantDetails.email": userEmail }
             }
-            const result = await appliedJobCollection.find(query).project({_id : 1}).toArray();
+            const result = await appliedJobCollection.find(query).project({ _id: 1 }).toArray();
             res.send(result)
         })
 
-        app.get("/jobPostedCount" , async(req , res) => {
+        app.get("/jobPostedCount", verifyToken, async (req, res) => {
             const userEmail = req.query.email;
             let query = {};
-            if(userEmail){
-                query = {...query , "buyer.buyerEmail" : userEmail}
+            if (userEmail) {
+                query = { ...query, "buyer.buyerEmail": userEmail }
             }
-            const result = await allJobsCollection.find(query).project({_id : 1}).toArray();
+            const result = await allJobsCollection.find(query).project({ _id: 1 }).toArray();
             res.send(result)
         })
 
