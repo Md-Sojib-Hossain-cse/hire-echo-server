@@ -111,9 +111,13 @@ async function run() {
         // applied job get api 
         app.get("/appliedJobs" , async(req , res) => {
             const userEmail = req.query.email;
+            const filterBy = req.query.filterBy;
             let query = {};
             if(userEmail){
                 query = {... query , "applicantDetails.email" : userEmail}
+            }
+            if(filterBy){
+                query = {... query , category : filterBy}
             }
             const result = await appliedJobCollection.find(query).toArray();
             res.send(result);
