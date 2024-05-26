@@ -75,6 +75,14 @@ async function run() {
             res.send(result);
         })
 
+        //delete a job api 
+        app.delete("/myJob/:id" , async (req , res) => {
+            const jobId = req.params.id;
+            const query = {_id : new ObjectId(jobId)}
+            const result = await allJobsCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         //top company related api
         app.get("/companies", async (req, res) => {
