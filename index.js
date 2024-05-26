@@ -75,6 +75,20 @@ async function run() {
             res.send(result);
         })
 
+        //update job details 
+        app.put("/jobDetailsUpdate/:id" ,async(req , res) => {
+            const jobId = req.params.id;
+            const jobDetails = req.body;
+            const filter = {_id : new ObjectId(jobId)};
+            const updateDoc = {
+                $set : {
+                    ...jobDetails
+                }
+            }
+            const result = await allJobsCollection.updateOne(filter , updateDoc)
+            res.send(result);
+        })
+
         //delete a job api 
         app.delete("/myJob/:id" , async (req , res) => {
             const jobId = req.params.id;
