@@ -69,6 +69,7 @@ async function run() {
             res.send(result);
         })
 
+        //single job details api
         app.get("/jobDetails/:id", async (req, res) => {
             const query = { _id: new ObjectId(req.params.id) }
             const result = await allJobsCollection.findOne(query);
@@ -106,6 +107,19 @@ async function run() {
 
 
         //applied jobs related api
+
+        // applied job get api 
+        app.get("/appliedJobs" , async(req , res) => {
+            const userEmail = req.query.email;
+            let query = {};
+            if(userEmail){
+                query = {... query , "applicantDetails.email" : userEmail}
+            }
+            const result = await appliedJobCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // applied job post api
         app.post("/appliedJobs" , async(req , res) => {
             const appliedJobsInfo = req.body;
             const result = await appliedJobCollection.insertOne(appliedJobsInfo);
