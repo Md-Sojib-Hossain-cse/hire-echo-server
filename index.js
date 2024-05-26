@@ -134,6 +134,28 @@ async function run() {
         })
 
 
+        //user related api
+        app.get("/jobAppliedCount" , async(req , res) => {
+            const userEmail = req.query.email;
+            let query = {};
+            if(userEmail){
+                query = {...query , "applicantDetails.email" : userEmail}
+            }
+            const result = await appliedJobCollection.find(query).project({_id : 1}).toArray();
+            res.send(result)
+        })
+
+        app.get("/jobPostedCount" , async(req , res) => {
+            const userEmail = req.query.email;
+            let query = {};
+            if(userEmail){
+                query = {...query , "buyer.buyerEmail" : userEmail}
+            }
+            const result = await allJobsCollection.find(query).project({_id : 1}).toArray();
+            res.send(result)
+        })
+
+
 
         app.listen(port, () => {
             console.log(`Example app listening on port ${port}`)
