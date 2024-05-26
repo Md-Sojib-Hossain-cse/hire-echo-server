@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
-var cors = require('cors')
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -12,6 +14,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 const port = process.env.PORT || 5000;
 
@@ -28,6 +31,8 @@ const client = new MongoClient(uri, {
 });
 
 
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -40,6 +45,16 @@ async function run() {
 
         app.get('/', (req, res) => {
             res.send('HireEcho Server is running......')
+        })
+
+
+        //jwt related api
+        app.post("/jwt" , async(req , res) => {
+            const user = req.body;
+            const token = await jwt.sign(user , process.env.API_SECRET_KEY , {expiresIn : "2hr"})
+            res
+            .cookie('token' , token , {httpOnly : true , secure : true , sameSite : 'none'})
+            .send({success : true});
         })
 
 
