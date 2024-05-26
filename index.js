@@ -47,12 +47,16 @@ async function run() {
         app.get('/allJobs', async (req, res) => {
             const searchedCategory = req.query.category;
             const searchedByJobTitle = req.query.search;
+            const searchedByUserEmail = req.query.email;
             let query = {}
             if (searchedCategory) {
                 query = { ...query, category: searchedCategory }
             }
             if (searchedByJobTitle) {
                 query = { ...query , jobTitle : { $regex : searchedByJobTitle , $options : "i"} }
+            }
+            if (searchedByUserEmail) {
+                query = { ...query, "buyer.buyerEmail": searchedByUserEmail }
             }
             const result = await allJobsCollection.find(query).toArray();
             res.send(result);
