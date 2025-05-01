@@ -29,7 +29,7 @@ const verifyToken = (req, res, next) => {
         if (err) {
             return res.status(401).send({ message: "unauthorized access" })
         }
-        req.user = decode
+        req.user = decode;
         next();
     })
 }
