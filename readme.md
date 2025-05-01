@@ -93,11 +93,13 @@ MongoDB URI is constructed using environment variables for security and flexibil
 
 ## 📦 Deployment
 
-Live Link: https://hire-echo.web.app/
-
 This server can be deployed on platforms like:
 
 Vercel (via serverless functions or API routes)
+
+## 🌐 Live Demo
+
+https://hire-echo.web.app/
 
 ## 🙌 Author
 
